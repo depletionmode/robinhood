@@ -5,6 +5,9 @@ import binascii
 import audiere
 import time
 
+DELAY_0 = 0.05
+SEQUENCE_NO = 0
+
 FREQ_TABLE_OFFSET = 0x2be
 FREQ_TABLE_SIZE = 0x60
 
@@ -64,6 +67,8 @@ class SoundMachine:
 			# set if
 			self.playLoop()
 			# clear cf
+			
+			if self.is_active == 0: return False
 		elif action == 3:
 			self.is_active = 0
 			self.toneOff()
@@ -81,6 +86,8 @@ class SoundMachine:
 		else:
 			# set cf
 			pass
+
+		return True
 
 	def setup(self, seq):
 		if seq < len(self.seqs):
@@ -130,7 +137,7 @@ class SoundMachine:
 					if self.byte_296 != 0:
 						self.byte_296 -= 1
 						self.byte_294 = self.byte_293
-						time.sleep(0.05)
+						time.sleep(DELAY_0)
 					else:
 						self.action = 0
 						self.__loop()
@@ -217,9 +224,8 @@ class SoundMachine:
 		else:
 			print 'invalid sequence case (0x%x)!!' % c
 
-SEQUENCE_NO = 5
-
 sm = SoundMachine(sequences, audiere.open_device())
 sm.launch(1, SEQUENCE_NO)
 
-while True: sm.launch(2)
+while True:
+	if not sm.launch(2): break
